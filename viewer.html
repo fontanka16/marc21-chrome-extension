@@ -1,0 +1,220 @@
+<!DOCTYPE html>
+<html lang="sv">
+<head>
+  <meta charset="UTF-8">
+  <title>MARC21 Viewer</title>
+  <style>
+    * { box-sizing: border-box; margin: 0; padding: 0; }
+
+    body {
+      font-family: "Segoe UI", system-ui, -apple-system, sans-serif;
+      background: #f1f3f4;
+      color: #202124;
+      min-height: 100vh;
+    }
+
+    header {
+      background: #1a73e8;
+      color: white;
+      padding: 14px 24px;
+      display: flex;
+      align-items: center;
+      gap: 12px;
+      position: sticky;
+      top: 0;
+      z-index: 100;
+      box-shadow: 0 2px 6px rgba(0,0,0,0.2);
+    }
+
+    header h1 { font-size: 18px; font-weight: 500; }
+    header span { font-size: 13px; opacity: 0.85; margin-left: auto; white-space: nowrap; overflow: hidden; text-overflow: ellipsis; max-width: 40%; }
+
+    #stats {
+      background: white;
+      padding: 10px 24px;
+      font-size: 13px;
+      color: #555;
+      border-bottom: 1px solid #e0e0e0;
+      display: flex;
+      gap: 20px;
+    }
+    #stats b { color: #202124; }
+
+    #search-bar {
+      padding: 12px 24px;
+      background: white;
+      border-bottom: 1px solid #e0e0e0;
+      display: flex;
+      gap: 10px;
+      align-items: center;
+    }
+    #search-bar input {
+      padding: 7px 12px;
+      border: 1px solid #ccc;
+      border-radius: 20px;
+      font-size: 13px;
+      width: 300px;
+      outline: none;
+    }
+    #search-bar input:focus { border-color: #1a73e8; }
+
+    .main { padding: 20px 24px; }
+
+    .record-card {
+      background: white;
+      border-radius: 8px;
+      box-shadow: 0 1px 3px rgba(0,0,0,0.12);
+      margin-bottom: 16px;
+      overflow: hidden;
+    }
+
+    .record-header {
+      background: #e8f0fe;
+      padding: 10px 16px;
+      cursor: pointer;
+      display: flex;
+      align-items: center;
+      gap: 10px;
+      user-select: none;
+    }
+    .record-header:hover { background: #d2e3fc; }
+
+    .rec-num {
+      font-size: 11px;
+      background: #1a73e8;
+      color: white;
+      border-radius: 12px;
+      padding: 2px 8px;
+      font-weight: 600;
+      flex-shrink: 0;
+    }
+    .rec-title {
+      font-weight: 500;
+      font-size: 14px;
+      flex: 1;
+      overflow: hidden;
+      text-overflow: ellipsis;
+      white-space: nowrap;
+    }
+    .toggle-icon {
+      font-size: 12px;
+      color: #666;
+      transition: transform 0.2s;
+      flex-shrink: 0;
+    }
+    .record-header.open .toggle-icon { transform: rotate(180deg); }
+
+    .leader-row {
+      padding: 8px 16px;
+      background: #fafafa;
+      font-size: 12px;
+      color: #777;
+      border-bottom: 1px solid #f0f0f0;
+      font-family: ui-monospace, SFMono-Regular, Menlo, monospace;
+    }
+
+    .fields-table {
+      width: 100%;
+      border-collapse: collapse;
+      font-size: 13px;
+    }
+    .fields-table tr:nth-child(even) { background: #fafafa; }
+    .fields-table tr:hover { background: #f1f3f4; }
+    .fields-table td {
+      padding: 7px 12px;
+      vertical-align: top;
+      border-bottom: 1px solid #f0f0f0;
+    }
+
+    .field-tag {
+      font-family: ui-monospace, SFMono-Regular, Menlo, monospace;
+      font-weight: 700;
+      color: #1a73e8;
+      width: 48px;
+      white-space: nowrap;
+    }
+    .field-label {
+      color: #555;
+      font-size: 12px;
+      width: 220px;
+    }
+    .field-indicator {
+      font-family: ui-monospace, SFMono-Regular, Menlo, monospace;
+      color: #aaa;
+      font-size: 11px;
+      width: 36px;
+    }
+    .field-value { color: #202124; word-break: break-word; }
+
+    .subfield-code {
+      color: #e67700;
+      font-family: ui-monospace, SFMono-Regular, Menlo, monospace;
+      font-size: 11px;
+      margin-left: 4px;
+    }
+
+    .record-body { display: none; }
+    .record-body.visible { display: block; }
+
+    #status {
+      text-align: center;
+      padding: 40px 20px;
+      color: #666;
+      font-size: 15px;
+    }
+    .error { color: #c0392b; }
+
+    #pagination {
+      text-align: center;
+      padding: 20px;
+      display: flex;
+      gap: 10px;
+      justify-content: center;
+      align-items: center;
+    }
+    #pagination button {
+      padding: 7px 16px;
+      background: #1a73e8;
+      color: white;
+      border: none;
+      border-radius: 4px;
+      cursor: pointer;
+      font-size: 13px;
+    }
+    #pagination button:disabled { background: #ccc; cursor: default; }
+    #pagination span { font-size: 13px; color: #555; }
+  </style>
+</head>
+<body>
+
+<header>
+  <svg width="22" height="22" viewBox="0 0 24 24" fill="white" aria-hidden="true">
+    <path d="M19 3H5c-1.1 0-2 .9-2 2v14c0 1.1.9 2 2 2h14c1.1 0 2-.9 2-2V5c0-1.1-.9-2-2-2zm-5 14H7v-2h7v2zm3-4H7v-2h10v2zm0-4H7V7h10v2z"/>
+  </svg>
+  <h1>MARC21 Viewer</h1>
+  <span id="filename-display"></span>
+</header>
+
+<div id="stats" style="display:none">
+  Poster: <b id="total-count">0</b>
+  &nbsp;|&nbsp; Visar: <b id="page-info">-</b>
+</div>
+
+<div id="search-bar" style="display:none">
+  <input type="text" id="search-input" placeholder="Sök i fältvärden, taggnummer eller etiketter…">
+  <span id="search-result-info" style="font-size:13px; color:#555;"></span>
+</div>
+
+<div class="main">
+  <div id="status">Laddar…</div>
+  <div id="records-container"></div>
+  <div id="pagination" style="display:none">
+    <button id="prev-btn">← Föregående</button>
+    <span id="page-label"></span>
+    <button id="next-btn">Nästa →</button>
+  </div>
+</div>
+
+<script type="module" src="viewer.js"></script>
+</body>
+</html>
