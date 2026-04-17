@@ -4,7 +4,7 @@
   "private": true,
   "type": "module",
   "scripts": {
-    "test": "node --test 'tests/**/*.test.mjs'",
+    "test": "node --test tests/*.test.mjs",
     "build:zip": "mkdir -p dist && VERSION=$(node -p \"require('./manifest.json').version\") && rm -f \"dist/marc21-viewer-$VERSION.zip\" && zip -r \"dist/marc21-viewer-$VERSION.zip\" manifest.json background.js viewer.html viewer.js marc-parser.js marc-labels.js icons LICENSE && echo \"Byggde dist/marc21-viewer-$VERSION.zip\""
   }
 }
