@@ -6,12 +6,41 @@ let allRecords = [];
 let filteredRecords = [];
 let currentPage = 0;
 
+const ERROR_MESSAGES = {
+  permission_denied: "Behörighet att hämta filen nekades. Aktivera domänen under Inställningar → Tillägg → MARC21 Viewer → Webbplatsåtkomst.",
+  http_error: "Servern svarade med ett fel.",
+  too_large: "Filen är för stor för att visas (max 20 MB).",
+  empty: "Servern returnerade en tom fil.",
+  invalid_url: "Ogiltig URL.",
+  network: "Kunde inte ansluta till servern.",
+  missing_key: "Filen hittades inte. Försök igen.",
+  decode_failed: "Kunde inte läsa filens innehåll.",
+  parse_failed: "Fel vid tolkning av MARC-filen.",
+  no_records_parsed: "Ingen av posterna kunde tolkas. Filen är troligen skadad eller inte i ISO 2709-format.",
+  no_source: "Ingen fil angiven. Högerklicka på en .mrc-, .marc- eller _compilemarc-länk och välj \"Öppna i MARC21 Viewer\"."
+};
+
 const params = new URLSearchParams(location.search);
 const status = document.getElementById("status");
 const container = document.getElementById("records-container");
 
-function escHtml(str) {
-  return String(str).replace(/&/g, "&amp;").replace(/</g, "&lt;").replace(/>/g, "&gt;").replace(/"/g, "&quot;");
+function showError(text, detail) {
+  status.textContent = "";
+  status.style.display = "block";
+  const span = document.createElement("span");
+  span.className = "error";
+  span.textContent = text;
+  status.appendChild(span);
+  if (detail) {
+    status.appendChild(document.createElement("br"));
+    const small = document.createElement("small");
+    small.textContent = detail;
+    status.appendChild(small);
+  }
+}
+
+function errorMessage(code) {
+  return ERROR_MESSAGES[code] || ERROR_MESSAGES.network;
 }
 
 function loadBuffer(arrayBuffer, filename) {
@@ -39,7 +68,7 @@ function loadBuffer(arrayBuffer, filename) {
     }
 
     if (allRecords.length === 0) {
-      status.innerHTML = `<span class="error">Ingen av ${recordChunks.length} poster kunde tolkas. Filen är troligen skadad eller inte i ISO 2709-format.</span>`;
+      showError(errorMessage("no_records_parsed"));
       return;
     }
 
@@ -53,7 +82,8 @@ function loadBuffer(arrayBuffer, filename) {
     setupSearch();
     setupPagination();
   } catch (e) {
-    status.innerHTML = `<span class="error">Fel vid tolkning: ${escHtml(e.message)}</span>`;
+    console.warn("Parse failed:", e);
+    showError(errorMessage("parse_failed"));
   }
 }
 
@@ -156,7 +186,6 @@ function renderPage(page) {
       header.classList.toggle("open", isOpen);
     });
 
-    // Expandera första posten per automatik
     if (globalIdx === 1) {
       body.classList.add("visible");
       header.classList.add("open");
@@ -213,10 +242,9 @@ if (source === "session" && key) {
   chrome.storage.session.get(key, (result) => {
     const marcFile = result[key];
     if (!marcFile) {
-      status.innerHTML = `<span class="error">Filen hittades inte. Försök igen.</span>`;
+      showError(errorMessage("missing_key"));
       return;
     }
-    // Städa upp direkt så att storage inte fylls på
     chrome.storage.session.remove(key);
     try {
       const binary = atob(marcFile.data);
@@ -224,14 +252,20 @@ if (source === "session" && key) {
       for (let i = 0; i < binary.length; i++) bytes[i] = binary.charCodeAt(i);
       loadBuffer(bytes.buffer, marcFile.name);
     } catch (e) {
-      status.innerHTML = `<span class="error">Kunde inte läsa filen: ${escHtml(e.message)}</span>`;
+      console.warn("Decode failed:", e);
+      showError(errorMessage("decode_failed"));
     }
   });
 
 } else if (source === "error") {
-  const msg = params.get("msg") || "Okänt fel";
-  status.innerHTML = `<span class="error">Kunde inte hämta filen: ${escHtml(msg)}<br><small>Kontrollera att servern svarar och tillåter cross-origin requests.</small></span>`;
+  const code = params.get("code") || "network";
+  showError(
+    "Kunde inte hämta filen: " + errorMessage(code),
+    code === "permission_denied"
+      ? null
+      : "Kontrollera att servern svarar och tillåter cross-origin requests."
+  );
 
 } else {
-  status.innerHTML = `<span class="error">Ingen fil angiven. Högerklicka på en .mrc-, .marc- eller _compilemarc-länk och välj "Öppna i MARC21 Viewer".</span>`;
+  showError(errorMessage("no_source"));
 }
