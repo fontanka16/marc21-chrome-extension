@@ -1,8 +1,8 @@
 {
   "manifest_version": 3,
   "name": "MARC21 Viewer",
-  "version": "1.1.0",
-  "description": "Öppnar MARC21-poster (.mrc, .marc) och Libris _compilemarc-länkar. Fler domäner aktiveras i tilläggsinställningar.",
+  "version": "1.2.0",
+  "description": "Öppnar MARC21-poster (.mrc, .marc) och Libris _compilemarc-länkar. Klicka på ikonen för att välja en lokal fil.",
   "permissions": [
     "contextMenus",
     "storage"

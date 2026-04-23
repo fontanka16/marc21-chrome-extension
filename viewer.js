@@ -2,6 +2,7 @@ import { splitRecords, parseRecord, getTitle } from "./marc-parser.js";
 import { labelFor } from "./marc-labels.js";
 
 const PAGE_SIZE = 20;
+const MAX_FILE_SIZE = 20 * 1024 * 1024;
 let allRecords = [];
 let filteredRecords = [];
 let currentPage = 0;
@@ -17,7 +18,9 @@ const ERROR_MESSAGES = {
   decode_failed: "Kunde inte läsa filens innehåll.",
   parse_failed: "Fel vid tolkning av MARC-filen.",
   no_records_parsed: "Ingen av posterna kunde tolkas. Filen är troligen skadad eller inte i ISO 2709-format.",
-  no_source: "Ingen fil angiven. Högerklicka på en .mrc-, .marc- eller _compilemarc-länk och välj \"Öppna i MARC21 Viewer\"."
+  no_source: "Ingen fil angiven. Högerklicka på en .mrc-, .marc- eller _compilemarc-länk och välj \"Öppna i MARC21 Viewer\", eller klicka på tilläggsikonen för att välja en lokal fil.",
+  too_large: "Filen är för stor för att visas (max 20 MB).",
+  read_failed: "Kunde inte läsa filen från disken."
 };
 
 const params = new URLSearchParams(location.search);
@@ -234,11 +237,45 @@ function setupPagination() {
   document.getElementById("next-btn").addEventListener("click", () => renderPage(currentPage + 1));
 }
 
+function setupLocalFilePicker() {
+  status.style.display = "none";
+  const picker = document.getElementById("file-picker");
+  const btn = document.getElementById("file-picker-btn");
+  const input = document.getElementById("file-input");
+  picker.style.display = "block";
+
+  btn.addEventListener("click", () => input.click());
+
+  input.addEventListener("change", () => {
+    const file = input.files && input.files[0];
+    if (!file) return;
+    if (file.size > MAX_FILE_SIZE) {
+      picker.style.display = "none";
+      showError(errorMessage("too_large"));
+      return;
+    }
+    const reader = new FileReader();
+    reader.onload = () => {
+      picker.style.display = "none";
+      status.style.display = "block";
+      loadBuffer(reader.result, file.name);
+    };
+    reader.onerror = () => {
+      picker.style.display = "none";
+      showError(errorMessage("read_failed"));
+    };
+    reader.readAsArrayBuffer(file);
+  });
+}
+
 // --- Entry point ---
 const source = params.get("source");
 const key = params.get("key");
 
-if (source === "session" && key) {
+if (source === "local") {
+  setupLocalFilePicker();
+
+} else if (source === "session" && key) {
   chrome.storage.session.get(key, (result) => {
     const marcFile = result[key];
     if (!marcFile) {

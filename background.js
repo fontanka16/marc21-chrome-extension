@@ -23,6 +23,11 @@ chrome.runtime.onInstalled.addListener(() => {
   });
 });
 
+chrome.action.onClicked.addListener(() => {
+  const viewerUrl = chrome.runtime.getURL("viewer.html") + "?source=local";
+  chrome.tabs.create({ url: viewerUrl });
+});
+
 chrome.contextMenus.onClicked.addListener(async (info) => {
   if (info.menuItemId !== MENU_ID) return;
   const url = info.linkUrl;

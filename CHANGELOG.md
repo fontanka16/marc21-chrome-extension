@@ -6,6 +6,11 @@ Formatet följer [Keep a Changelog](https://keepachangelog.com/sv/1.1.0/) och pr
 
 ## [Unreleased]
 
+## [1.2.0] – 2026-04-23
+
+### Added
+- Vänsterklick på tilläggsikonen öppnar viewern med en lokal filväljare — välj en `.mrc`- eller `.marc`-fil från hårddisken utan att behöva en länk att högerklicka på.
+
 ## [1.1.0] – 2026-04-19
 
 ### Security
@@ -31,6 +36,7 @@ Formatet följer [Keep a Changelog](https://keepachangelog.com/sv/1.1.0/) och pr
 - Automatiska tester via Nodes inbyggda testrunner (enhetstester för parsern + fixtures mot `testdata/`).
 - GitHub Actions-workflow som kör testerna vid varje push och pull request.
 
-[Unreleased]: https://github.com/fontanka16/marc21-chrome-extension/compare/v1.1.0...HEAD
+[Unreleased]: https://github.com/fontanka16/marc21-chrome-extension/compare/v1.2.0...HEAD
+[1.2.0]: https://github.com/fontanka16/marc21-chrome-extension/releases/tag/v1.2.0
 [1.1.0]: https://github.com/fontanka16/marc21-chrome-extension/releases/tag/v1.1.0
 [1.0.0]: https://github.com/fontanka16/marc21-chrome-extension/releases/tag/v1.0.0

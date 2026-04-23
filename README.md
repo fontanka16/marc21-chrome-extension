@@ -1,6 +1,6 @@
 # MARC21 Viewer
 
-[![Version](https://img.shields.io/badge/version-1.0.0-blue.svg)](manifest.json)
+[![Version](https://img.shields.io/badge/version-1.2.0-blue.svg)](manifest.json)
 [![License: MIT](https://img.shields.io/badge/license-MIT-green.svg)](LICENSE)
 [![Tests](https://github.com/fontanka16/marc21-chrome-extension/actions/workflows/test.yml/badge.svg)](https://github.com/fontanka16/marc21-chrome-extension/actions/workflows/test.yml)
 
@@ -9,6 +9,7 @@ Ett Chrome-tillägg som öppnar MARC21-poster i en läsbar vy. Stödjer `.mrc`- 
 ## Funktioner
 
 - **Högerklick på en MARC-länk** → "Öppna i MARC21 Viewer"
+- **Vänsterklick på tilläggsikonen** → välj en lokal `.mrc`- eller `.marc`-fil
 - Visar alla fält med taggnummer, etikett, indikatorer och delfält
 - Expandera och minimera enskilda poster
 - Sök i fältvärden, taggnummer och etiketter
@@ -24,7 +25,9 @@ Ett Chrome-tillägg som öppnar MARC21-poster i en läsbar vy. Stödjer `.mrc`- 
 
 ## Användning
 
-Högerklicka på en länk som slutar på `.mrc` eller `.marc`, eller som innehåller `_compilemarc` (Libris), och välj **"Öppna i MARC21 Viewer"**. En ny flik öppnas med posten.
+**Från en länk:** Högerklicka på en länk som slutar på `.mrc` eller `.marc`, eller som innehåller `_compilemarc` (Libris), och välj **"Öppna i MARC21 Viewer"**. En ny flik öppnas med posten.
+
+**Från en lokal fil:** Klicka på tilläggsikonen i verktygsfältet. En ny flik öppnas med en filväljare där du kan välja en `.mrc`- eller `.marc`-fil från din dator (max 20 MB).
 
 ## Begränsningar
 
